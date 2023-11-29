@@ -3,6 +3,7 @@ import aiohttp
 import asyncio
 from dateutil.relativedelta import relativedelta
 from config.api_config import URL, TOKEN
+import pandas as pd 
 
 
 class Api:
@@ -47,9 +48,9 @@ class Api:
             is_tasks_to_wait = len([i for i in requests if i['status'] != 'done'])
 
             if counter < len(requests) and running_tasks < persecond:
-                requests[n]['status'] = 'fetch'
+                requests[counter]['status'] = 'fetch'
                 asyncio.create_task(self.fetch(session, requests[counter]))
-                n += 1
+                counter += 1
                 print(f'Schedule tasks {counter}. '
                     f'Running {running_tasks} '
                     f'Remain {is_tasks_to_wait}')
@@ -83,7 +84,7 @@ class Api:
                         detections.append(list(map(self.__map_detection, data)))
                 else:
                     print(f"Failed to fetch {month}")
-            return detections
+            return pd.DataFrame(list(chain(*detections)))
 
     def get_detection_url(self, counter_id, month):
             next_month = month + relativedelta(months=+1)
@@ -113,7 +114,9 @@ class Api:
                 return []
             features = data["features"]
             nested_counters = list(map(self.__map_counter, features))
-            return list(chain(*nested_counters))
+            counter_list = list(chain(*nested_counters))
+            return pd.DataFrame(counter_list) 
+
 
 
     #  map functions
