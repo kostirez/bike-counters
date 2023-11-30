@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, MetaData, Table, Column, Integer, String, ForeignKey
 import pandas as pd
 from config.db_config import DATABASE_URL
+from sqlalchemy.engine.reflection import Inspector
 
 class Db:
     def __init__(self):
@@ -27,6 +28,10 @@ class Db:
     def close(self): 
         self.__dbConnection.close()
 
+
+    def table_exists(self, table_name):
+        inspector = Inspector.from_engine(self.__engine)
+        return table_name in inspector.get_table_names()
 
 
     # get tables
